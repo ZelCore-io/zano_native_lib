@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        id="cordova-plugin-zano-wallet"
+        version="1.0.0">
+
+    <name>Zano Wallet</name>
+    <description>Cordova plugin for Zano cryptocurrency wallet native library integration</description>
+    <license>MIT</license>
+    <keywords>cordova,zano,wallet,cryptocurrency,blockchain</keywords>
+    <repo>https://github.com/zano/cordova-plugin-zano-wallet.git</repo>
+
+    <engines>
+        <engine name="cordova" version=">=9.0.0"/>
+        <engine name="cordova-android" version=">=9.0.0"/>
+        <engine name="cordova-ios" version=">=6.0.0"/>
+    </engines>
+
+    <!-- JavaScript Interface -->
+    <js-module src="www/ZanoWallet.js" name="ZanoWallet">
+        <clobbers target="ZanoWallet" />
+    </js-module>
+
+    <!-- Android Platform -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="ZanoWallet">
+                <param name="android-package" value="com.zano.wallet.ZanoWalletPlugin"/>
+                <param name="onload" value="true" />
+            </feature>
+        </config-file>
+
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+        </config-file>
+
+        <!-- Java source files -->
+        <source-file src="src/android/java/ZanoWalletPlugin.java"
+                     target-dir="src/com/zano/wallet" />
+
+        <config-file target="app/build.gradle" parent="/">
+            <![CDATA[
+android {
+    defaultConfig {
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++14 -frtti -fexceptions"
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
+        ndk {
+            abiFilters "arm64-v8a", "armeabi-v7a", "x86", "x86_64"
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "../../../plugins/cordova-plugin-zano-wallet/src/android/jni/CMakeLists.txt"
+            version "3.10.2"
+        }
+    }
+}
+            ]]>
+        </config-file>
+
+        <hook type="after_plugin_install" src="scripts/android_install.js" />
+    </platform>
+
+    <!-- iOS Platform -->
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="ZanoWallet">
+                <param name="ios-package" value="ZanoWalletPlugin"/>
+                <param name="onload" value="true" />
+            </feature>
+        </config-file>
+
+        <!-- Objective-C++ source -->
+        <header-file src="src/ios/ZanoWalletPlugin.h" />
+        <source-file src="src/ios/ZanoWalletPlugin.mm" />
+
+        <!-- Native library frameworks -->
+        <framework src="native/ios/libwallet.a.xcframework" custom="true" embed="true" />
+        <framework src="native/ios/libcurrency_core.a.xcframework" custom="true" embed="true" />
+        <framework src="native/ios/libcommon.a.xcframework" custom="true" embed="true" />
+        <framework src="native/ios/libcrypto_.a.xcframework" custom="true" embed="true" />
+        <framework src="native/ios/libz.a.xcframework" custom="true" embed="true" />
+        <framework src="native/ios/thirdparty/libboost.xcframework" custom="true" embed="true" />
+        <framework src="native/ios/thirdparty/openssl/libcrypto.xcframework" custom="true" embed="true" />
+        <framework src="native/ios/thirdparty/openssl/libssl.xcframework" custom="true" embed="true" />
+
+        <!-- System frameworks -->
+        <framework src="libc++.tbd" />
+        <framework src="Security.framework" />
+        <framework src="SystemConfiguration.framework" />
+
+        <hook type="after_plugin_install" src="scripts/ios_install.js" />
+    </platform>
+
+    <!-- Install hook to download/copy native libraries -->
+    <hook type="before_plugin_install" src="scripts/download_binaries.js" />
+</plugin>

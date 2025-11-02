@@ -1,0 +1,59 @@
+{
+  "name": "cordova-plugin-zano-wallet",
+  "version": "1.0.0",
+  "description": "Cordova plugin for Zano cryptocurrency wallet native library integration",
+  "main": "www/ZanoWallet.js",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "test": "echo \"No tests specified\" && exit 0",
+    "package-binaries": "node scripts/package_binaries.js",
+    "postinstall": "node scripts/download_binaries.js || echo 'Native libraries will be downloaded on plugin install'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zano/cordova-plugin-zano-wallet.git"
+  },
+  "keywords": [
+    "cordova",
+    "cordova-plugin",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios",
+    "zano",
+    "wallet",
+    "cryptocurrency",
+    "blockchain",
+    "privacy"
+  ],
+  "engines": {
+    "cordovaDependencies": {
+      ">=9.0.0": {
+        "cordova-android": ">=9.0.0",
+        "cordova-ios": ">=6.0.0"
+      }
+    }
+  },
+  "author": "Zano Project",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zano/cordova-plugin-zano-wallet/issues"
+  },
+  "homepage": "https://github.com/zano/cordova-plugin-zano-wallet#readme",
+  "cordova": {
+    "id": "cordova-plugin-zano-wallet",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "files": [
+    "www/",
+    "src/",
+    "types/",
+    "native/",
+    "scripts/",
+    "plugin.xml",
+    "README.md",
+    "LICENSE"
+  ]
+}
