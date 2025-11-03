@@ -369,4 +369,91 @@ Java_com_zano_wallet_ZanoWalletPlugin_nativeGetCurrentTxFee(JNIEnv* env, jobject
     }
 }
 
+// ========== New Utility Functions ==========
+
+JNIEXPORT jstring JNICALL
+Java_com_zano_wallet_ZanoWalletPlugin_nativeGetWorkingDirectory(JNIEnv* env, jobject thiz) {
+    try {
+        // On Android, the working directory should be obtained from Java context
+        // This returns the internal app files directory path
+        // For now, we return a platform-specific default that will be set by Java
+        // The actual directory is passed during init() and managed by the wallet library
+
+        // Note: In practice, this should be called from Java side using:
+        // context.getFilesDir().getAbsolutePath()
+
+        // Return the directory from plain_wallet if it has a getter, otherwise return a note
+        std::string result = "{\"directory\":\"/data/data/com.zano.wallet/files\"}";
+        LOGI("getWorkingDirectory called - should be handled on Java side with context.getFilesDir()");
+        return string_to_jstring(env, result);
+    } catch (const std::exception& e) {
+        LOGE("getWorkingDirectory failed: %s", e.what());
+        return string_to_jstring(env, std::string("Error: ") + e.what());
+    }
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_zano_wallet_ZanoWalletPlugin_nativeGetDownloadsDirectory(JNIEnv* env, jobject thiz) {
+    try {
+        // On Android, the downloads directory should be obtained from Java context
+        // This should use Environment.getExternalStoragePublicDirectory(DIRECTORY_DOWNLOADS)
+
+        // Note: In practice, this should be called from Java side using:
+        // Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()
+
+        std::string result = "{\"directory\":\"/storage/emulated/0/Download\"}";
+        LOGI("getDownloadsDirectory called - should be handled on Java side with Environment.getExternalStoragePublicDirectory()");
+        return string_to_jstring(env, result);
+    } catch (const std::exception& e) {
+        LOGE("getDownloadsDirectory failed: %s", e.what());
+        return string_to_jstring(env, std::string("Error: ") + e.what());
+    }
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_zano_wallet_ZanoWalletPlugin_nativeGetSeedPhraseInfo(JNIEnv* env, jobject thiz, jstring seed, jstring seedPassword) {
+    try {
+        std::string seedStr = jstring_to_string(env, seed);
+        std::string seedPassStr = jstring_to_string(env, seedPassword);
+
+        LOGI("Getting seed phrase info");
+
+        // Build JSON params
+        std::string params = "{\"seed_phrase\":\"" + seedStr + "\",\"seed_password\":\"" + seedPassStr + "\"}";
+
+        // Call via sync_call with instance_id 0 (controller-level call)
+        std::string result = plain_wallet::sync_call("get_seed_phrase_info", 0, params);
+        return string_to_jstring(env, result);
+    } catch (const std::exception& e) {
+        LOGE("getSeedPhraseInfo failed: %s", e.what());
+        return string_to_jstring(env, std::string("Error: ") + e.what());
+    }
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_zano_wallet_ZanoWalletPlugin_nativeDaemonCall(JNIEnv* env, jobject thiz, jstring method, jstring params) {
+    try {
+        std::string methodStr = jstring_to_string(env, method);
+        std::string paramsStr = jstring_to_string(env, params);
+
+        LOGI("Daemon RPC call: method=%s", methodStr.c_str());
+
+        // Build the JSON-RPC request
+        // The params should already be a JSON string containing the method and parameters
+        // We need to call sync_call with "proxy_to_daemon" command
+
+        std::string rpc_request = "{\"jsonrpc\":\"2.0\",\"id\":0,\"method\":\"" + methodStr + "\",\"params\":" + paramsStr + "}";
+
+        // Call plain_wallet::sync_call to proxy to daemon
+        // The sync_call function signature: sync_call(command, wallet_id, params)
+        // For daemon calls, wallet_id is 0
+        std::string result = plain_wallet::sync_call("proxy_to_daemon", 0, rpc_request);
+
+        return string_to_jstring(env, result);
+    } catch (const std::exception& e) {
+        LOGE("daemonCall failed: %s", e.what());
+        return string_to_jstring(env, std::string("Error: ") + e.what());
+    }
+}
+
 } // extern "C"

@@ -17,7 +17,19 @@
     </engines>
 
     <!-- JavaScript Interface -->
-    <js-module src="www/ZanoWallet.js" name="ZanoWallet">
+    <js-module src="www/ZanoController.js" name="ZanoController">
+    </js-module>
+
+    <js-module src="www/ZanoWalletInstance.js" name="ZanoWalletInstance">
+    </js-module>
+
+    <js-module src="www/ZanoWalletPlugin.js" name="ZanoWalletPlugin">
+    </js-module>
+
+    <js-module src="www/entities.js" name="entities">
+    </js-module>
+
+    <js-module src="www/index.js" name="ZanoWallet">
         <clobbers target="ZanoWallet" />
     </js-module>
 

@@ -79,6 +79,15 @@ public class ZanoWalletPlugin extends CordovaPlugin {
                 case "getAddressInfo":
                     this.getAddressInfo(args.getString(0), callbackContext);
                     return true;
+                case "getWorkingDirectory":
+                    this.getWorkingDirectory(callbackContext);
+                    return true;
+                case "getDownloadsDirectory":
+                    this.getDownloadsDirectory(callbackContext);
+                    return true;
+                case "getSeedPhraseInfo":
+                    this.getSeedPhraseInfo(args.getString(0), args.getString(1), callbackContext);
+                    return true;
 
                 // Configuration
                 case "setAppConfig":
@@ -147,6 +156,11 @@ public class ZanoWalletPlugin extends CordovaPlugin {
                     this.getCurrentTxFee(args.getLong(0), callbackContext);
                     return true;
 
+                // Daemon RPC
+                case "daemonCall":
+                    this.daemonCall(args.getString(0), args.getString(1), callbackContext);
+                    return true;
+
                 default:
                     return false;
             }
@@ -176,6 +190,9 @@ public class ZanoWalletPlugin extends CordovaPlugin {
     private native String nativeGetExportPrivateInfo(String targetDir);
     private native String nativeDeleteWallet(String fileName);
     private native String nativeGetAddressInfo(String address);
+    private native String nativeGetWorkingDirectory();
+    private native String nativeGetDownloadsDirectory();
+    private native String nativeGetSeedPhraseInfo(String seed, String seedPassword);
 
     // Configuration
     private native String nativeSetAppConfig(String confStr, String encryptionKey);
@@ -205,6 +222,9 @@ public class ZanoWalletPlugin extends CordovaPlugin {
     private native String nativeGetWalletInfo(long walletId);
     private native String nativeResetWalletPassword(long walletId, String password);
     private native long nativeGetCurrentTxFee(long priority);
+
+    // Daemon RPC
+    private native String nativeDaemonCall(String method, String params);
 
     // ========== Implementation methods ==========
 
@@ -513,5 +533,51 @@ public class ZanoWalletPlugin extends CordovaPlugin {
         } catch (Exception e) {
             callbackContext.error(e.getMessage());
         }
+    }
+
+    private void getWorkingDirectory(final CallbackContext callbackContext) {
+        try {
+            // Get the app's internal files directory from Android Context
+            String directory = cordova.getActivity().getApplicationContext().getFilesDir().getAbsolutePath();
+            callbackContext.success(directory);
+        } catch (Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void getDownloadsDirectory(final CallbackContext callbackContext) {
+        try {
+            // Get the public downloads directory
+            // Note: This requires READ_EXTERNAL_STORAGE permission on Android < 10
+            android.os.Environment.getExternalStorageState(); // Check if external storage is available
+            java.io.File downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS);
+            String directory = downloadsDir.getAbsolutePath();
+            callbackContext.success(directory);
+        } catch (Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void getSeedPhraseInfo(final String seed, final String seedPassword, final CallbackContext callbackContext) {
+        try {
+            String result = nativeGetSeedPhraseInfo(seed, seedPassword);
+            callbackContext.success(result);
+        } catch (Exception e) {
+            callbackContext.error(e.getMessage());
+        }
+    }
+
+    private void daemonCall(final String method, final String params, final CallbackContext callbackContext) {
+        runOnBackground(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String result = nativeDaemonCall(method, params);
+                    callbackContext.success(result);
+                } catch (Exception e) {
+                    callbackContext.error(e.getMessage());
+                }
+            }
+        });
     }
 }

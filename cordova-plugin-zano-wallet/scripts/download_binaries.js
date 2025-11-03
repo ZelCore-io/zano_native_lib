@@ -28,9 +28,11 @@ module.exports = async function(context) {
 
     // Check if libraries already exist
     const hasAndroidLibs = fs.existsSync(path.join(androidLibs, 'arm64-v8a'));
+    const hasBoostLibs = fs.existsSync(path.join(androidLibs, 'boost'));
+    const hasOpenSSLLibs = fs.existsSync(path.join(androidLibs, 'openssl'));
     const hasIosLibs = fs.existsSync(path.join(iosLibs, 'libwallet.a.xcframework'));
 
-    if (hasAndroidLibs && hasIosLibs) {
+    if (hasAndroidLibs && hasBoostLibs && hasOpenSSLLibs && hasIosLibs) {
         console.log('✓ Native libraries already present');
         return;
     }

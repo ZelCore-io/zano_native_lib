@@ -14,6 +14,9 @@
 - (void)getExportPrivateInfo:(CDVInvokedUrlCommand*)command;
 - (void)deleteWallet:(CDVInvokedUrlCommand*)command;
 - (void)getAddressInfo:(CDVInvokedUrlCommand*)command;
+- (void)getWorkingDirectory:(CDVInvokedUrlCommand*)command;
+- (void)getDownloadsDirectory:(CDVInvokedUrlCommand*)command;
+- (void)getSeedPhraseInfo:(CDVInvokedUrlCommand*)command;
 
 // Configuration
 - (void)setAppConfig:(CDVInvokedUrlCommand*)command;
@@ -43,5 +46,8 @@
 - (void)getWalletInfo:(CDVInvokedUrlCommand*)command;
 - (void)resetWalletPassword:(CDVInvokedUrlCommand*)command;
 - (void)getCurrentTxFee:(CDVInvokedUrlCommand*)command;
+
+// Daemon RPC
+- (void)daemonCall:(CDVInvokedUrlCommand*)command;
 
 @end

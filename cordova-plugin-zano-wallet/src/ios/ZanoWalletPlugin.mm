@@ -424,4 +424,86 @@
     }
 }
 
+#pragma mark - New Utility Functions
+
+- (void)getWorkingDirectory:(CDVInvokedUrlCommand*)command {
+    @try {
+        // Get the iOS Documents directory path
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSString *documentsDirectory = [paths objectAtIndex:0];
+
+        [self sendSuccess:documentsDirectory forCommand:command];
+    } @catch (NSException* e) {
+        [self sendError:e.reason forCommand:command];
+    }
+}
+
+- (void)getDownloadsDirectory:(CDVInvokedUrlCommand*)command {
+    @try {
+        // On iOS, there's no public Downloads directory like Android
+        // We'll use the Documents directory as the download location
+        // Alternatively, could use a "Downloads" subdirectory within Documents
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSString *documentsDirectory = [paths objectAtIndex:0];
+        NSString *downloadsDirectory = [documentsDirectory stringByAppendingPathComponent:@"Downloads"];
+
+        // Create the Downloads directory if it doesn't exist
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        if (![fileManager fileExistsAtPath:downloadsDirectory]) {
+            [fileManager createDirectoryAtPath:downloadsDirectory
+                   withIntermediateDirectories:YES
+                                    attributes:nil
+                                         error:nil];
+        }
+
+        [self sendSuccess:downloadsDirectory forCommand:command];
+    } @catch (NSException* e) {
+        [self sendError:e.reason forCommand:command];
+    }
+}
+
+- (void)getSeedPhraseInfo:(CDVInvokedUrlCommand*)command {
+    @try {
+        NSString* seed = [command.arguments objectAtIndex:0];
+        NSString* seedPassword = [command.arguments objectAtIndex:1];
+
+        // Build JSON params
+        std::string seedStr = [self stringFromNSString:seed];
+        std::string seedPassStr = [self stringFromNSString:seedPassword];
+        std::string params = "{\"seed_phrase\":\"" + seedStr + "\",\"seed_password\":\"" + seedPassStr + "\"}";
+
+        // Call via sync_call with instance_id 0 (controller-level call)
+        std::string result = plain_wallet::sync_call("get_seed_phrase_info", 0, params);
+
+        [self sendSuccess:[self nsStringFromString:result] forCommand:command];
+    } @catch (NSException* e) {
+        [self sendError:[NSString stringWithFormat:@"getSeedPhraseInfo failed: %@", e.reason] forCommand:command];
+    }
+}
+
+- (void)daemonCall:(CDVInvokedUrlCommand*)command {
+    [self runInBackground:^{
+        @try {
+            NSString* method = [command.arguments objectAtIndex:0];
+            NSString* params = [command.arguments objectAtIndex:1];
+
+            NSLog(@"Daemon RPC call: method=%@", method);
+
+            // Build the JSON-RPC request
+            std::string methodStr = [self stringFromNSString:method];
+            std::string paramsStr = [self stringFromNSString:params];
+
+            std::string rpc_request = "{\"jsonrpc\":\"2.0\",\"id\":0,\"method\":\"" + methodStr + "\",\"params\":" + paramsStr + "}";
+
+            // Call plain_wallet::sync_call to proxy to daemon
+            // For daemon calls, wallet_id is 0
+            std::string result = plain_wallet::sync_call("proxy_to_daemon", 0, rpc_request);
+
+            [self sendSuccess:[self nsStringFromString:result] forCommand:command];
+        } @catch (NSException* e) {
+            [self sendError:[NSString stringWithFormat:@"daemonCall failed: %@", e.reason] forCommand:command];
+        }
+    } command:command];
+}
+
 @end

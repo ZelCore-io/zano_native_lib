@@ -1,13 +1,23 @@
 {
   "name": "cordova-plugin-zano-wallet",
-  "version": "1.0.0",
-  "description": "Cordova plugin for Zano cryptocurrency wallet native library integration",
-  "main": "www/ZanoWallet.js",
-  "types": "types/index.d.ts",
+  "version": "2.0.0",
+  "description": "TypeScript-first Cordova plugin for Zano cryptocurrency wallet with 100+ typed methods and daemon RPC access",
+  "main": "www/index.js",
+  "types": "www/index.d.ts",
   "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "prebuild": "npm run clean",
+    "clean": "node scripts/clean.js",
     "test": "echo \"No tests specified\" && exit 0",
     "package-binaries": "node scripts/package_binaries.js",
-    "postinstall": "node scripts/download_binaries.js || echo 'Native libraries will be downloaded on plugin install'"
+    "postinstall": "node scripts/download_binaries.js || echo 'Native libraries will be downloaded on plugin install'",
+    "prepare": "npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "@types/node": "^20.0.0",
+    "@types/cordova": "^11.0.0"
   },
   "repository": {
     "type": "git",
@@ -23,7 +33,12 @@
     "wallet",
     "cryptocurrency",
     "blockchain",
-    "privacy"
+    "privacy",
+    "typescript",
+    "daemon-rpc",
+    "assets",
+    "marketplace",
+    "ionic-swaps"
   ],
   "engines": {
     "cordovaDependencies": {
@@ -49,11 +64,15 @@
   "files": [
     "www/",
     "src/",
+    "src-ts/",
     "types/",
     "native/",
     "scripts/",
     "plugin.xml",
+    "tsconfig.json",
     "README.md",
+    "QUICKSTART.md",
+    "CHANGELOG.md",
     "LICENSE"
   ]
 }
